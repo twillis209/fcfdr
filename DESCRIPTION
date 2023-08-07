@@ -12,7 +12,7 @@ Authors@R:
     person("James", "Liley", role = c("ctb")))
 Description: Provides functions to implement the Flexible cFDR (Hutchinson et al. (2021) <doi:10.1371/journal.pgen.1009853>) and Binary cFDR (Hutchinson et al. (2021) <doi:10.1101/2021.10.21.465274>) methodologies to leverage auxiliary data from arbitrary distributions, for example functional genomic data, with GWAS p-values to generate re-weighted p-values. 
 Imports: locfdr, MASS, ggplot2, cowplot, fields, dplyr, spatstat.geom, polyCub, hexbin, bigsplines, data.table, grDevices, Hmisc
-Suggests: stats, knitr, rmarkdown, digest, testthat (>= 3.0.0)
+Suggests: stats, knitr, rmarkdown, digest, testthat (>= 4.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
