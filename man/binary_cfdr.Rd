@@ -4,7 +4,7 @@
 \alias{binary_cfdr}
 \title{Perform cFDR leveraging binary auxiliary covariates}
 \usage{
-binary_cfdr(p, q, group, threads)
+binary_cfdr(p, q, group, threads = 1)
 }
 \arguments{
 \item{p}{p-values for principal trait (vector of length n)}
