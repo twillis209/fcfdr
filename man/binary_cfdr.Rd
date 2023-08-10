@@ -4,7 +4,7 @@
 \alias{binary_cfdr}
 \title{Perform cFDR leveraging binary auxiliary covariates}
 \usage{
-binary_cfdr(p, q, group)
+binary_cfdr(p, q, group, threads)
 }
 \arguments{
 \item{p}{p-values for principal trait (vector of length n)}
@@ -12,6 +12,8 @@ binary_cfdr(p, q, group)
 \item{q}{binary auxiliary data values (vector of length n)}
 
 \item{group}{group membership of each SNP for leave-one-out procedure (vector of length n) (e.g. chromosome number or LD block)}
+
+\item{threads}{number of threads over which to parallelise procedure}
 }
 \value{
 data.frame of p, q and v values

@@ -40,6 +40,7 @@ per_group_binary_cfdr <- function(p_loo, q_loo, ps, qs, x) {
 #' @param p p-values for principal trait (vector of length n)
 #' @param q binary auxiliary data values (vector of length n)
 #' @param group group membership of each SNP for leave-one-out procedure (vector of length n) (e.g. chromosome number or LD block)
+#' @param threads number of threads over which to parallelise procedure
 #'
 #' @importFrom parallel mclapply
 #' 
@@ -68,7 +69,7 @@ per_group_binary_cfdr <- function(p_loo, q_loo, ps, qs, x) {
 #' 
 #' @export
 #'
-binary_cfdr <- function(p, q, group, threads){
+binary_cfdr <- function(p, q, group, threads = 1){
 
   unique_group <- unique(group)
 
