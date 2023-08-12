@@ -115,7 +115,7 @@ binary_cfdr <- function(p, q, group, threads = 1){
     # replace problematic points
     v[ind] <- ifelse(data_bad$q==0, predict(lmout_q_0, data.frame(p = data_bad$p)), predict(lmout_q_1, data.frame(p = data_bad$p)))
     
-    if(ind > length(p)*0.5) warning("p,q have low correlation and >50% of v-values may be problematic - check results")
+    if(length(ind) > length(p)*0.5) warning("p,q have low correlation and >50% of v-values may be problematic - check results")
     
     
   }
