@@ -10,3 +10,4 @@ inst/doc
 fcfdr.Rcheck
 fcfdr_*.tar.gz
 scratch
+dev_env.yaml
