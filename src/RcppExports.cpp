@@ -11,6 +11,30 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// arma_pmax
+arma::vec arma_pmax(arma::vec x, arma::vec y);
+RcppExport SEXP _fcfdr_arma_pmax(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(arma_pmax(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// arma_pmin
+arma::vec arma_pmin(arma::vec x, arma::vec y);
+RcppExport SEXP _fcfdr_arma_pmin(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(arma_pmin(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // approxExtrap_rcpp
 arma::vec approxExtrap_rcpp(arma::vec x, arma::vec y, arma::vec xout);
 RcppExport SEXP _fcfdr_approxExtrap_rcpp(SEXP xSEXP, SEXP ySEXP, SEXP xoutSEXP) {
@@ -54,6 +78,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_fcfdr_arma_pmax", (DL_FUNC) &_fcfdr_arma_pmax, 2},
+    {"_fcfdr_arma_pmin", (DL_FUNC) &_fcfdr_arma_pmin, 2},
     {"_fcfdr_approxExtrap_rcpp", (DL_FUNC) &_fcfdr_approxExtrap_rcpp, 3},
     {"_fcfdr_approxfun_rcpp", (DL_FUNC) &_fcfdr_approxfun_rcpp, 3},
     {"_fcfdr_per_group_binary_cfdr", (DL_FUNC) &_fcfdr_per_group_binary_cfdr, 5},
