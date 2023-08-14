@@ -1,7 +1,6 @@
 #include <RcppArmadillo.h>
 
 using namespace Rcpp;
-using namespace arma;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
@@ -44,7 +43,7 @@ arma::vec approxExtrap_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
     } else if(upper == x.end()) {
       yout(i) = (y(y.size()-1) - y(y.size()-2))/(x(x.size()-1) - x(x.size()-2))*(xout(i)-x(x.size()-2))+y(y.size()-2);
     } else {
-      uword x1_idx = std::distance(x.begin(), upper);
+      arma::uword x1_idx = std::distance(x.begin(), upper);
       double x1 = *upper;
       double x0 = x(x1_idx-1);
       double y1 = y(x1_idx);
@@ -91,7 +90,7 @@ arma::vec approxfun_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
       continue;
     }
 
-    uword x1_idx = std::distance(x.begin(), upper);
+    arma::uword x1_idx = std::distance(x.begin(), upper);
     double x1 = *upper;
     double x0 = x(x1_idx-1);
     double y1 = y(x1_idx);
@@ -110,65 +109,71 @@ arma::vec per_group_binary_cfdr(arma::vec p_loo, arma::vec q_loo, arma::vec ps, 
     int n = p_loo.size();
     int m = ps.size();
 
-    double q0 = (double) arma::intersect(find(q_loo == 1), find(p_loo > 0.5)).size() / (double) find(p_loo > 0.5).size();
-    double mult = (double) arma::intersect(find(q_loo == 0), find(p_loo > 0.5)).size() / (double) arma::intersect(find(q_loo == 1), find(p_loo > 0.5)).size();
+    // Works!
+    //auto q0 = arma::size(arma::intersect(find(q_loo == 1), find(p_loo > 0.5)));
 
-    arma::vec q0_sol(m);
-    arma::vec q1_sol(m);
+    double q0 = static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 1), find(p_loo > 0.5))).size()) / static_cast<double>(arma::conv_to<arma::uvec>::from(find(p_loo > 0.5)).size());
 
-    for (int i = 0; i < m; ++i) {
-        double p = ps(i);
-        q0_sol(i) = arma::max(arma::intersect(find(p_loo <= p), find(q_loo == 0)).size(), 1);
-        q1_sol(i) = arma::max(arma::intersect(find(p_loo <= p), find(q_loo == 1)).size(), 1);
-    }
+    //double mult = (double) arma::size(arma::intersect(find(q_loo == 0), find(p_loo > 0.5))) / (double) arma::size(arma::intersect(find(q_loo == 1), find(p_loo > 0.5)));
 
-    arma::vec sol = arma::zeros<arma::vec>(m);
-
-    for (int i = 0; i < m; ++i) {
-        if (qs(i) == 0) {
-            sol(i) = mult * ps(i) / q0_sol(i);
-        } else {
-            sol(i) = (1. / mult) * ps(i) / q1_sol(i);
-        }
-    }
-
-    arma::vec y(x.size());
-
-    for(int i = 0; i < x.size(); ++i) {
-      y(i) = (double) x(i) / (double) arma::max(arma::intersect(arma::find(p_loo <= x(i)), arma::find(q_loo == 0)).size(), 1);
-    }
-
-    arma::vec extr_x = sol.elem(arma::find_unique(sol));
-    arma::vec extr_y = approxExtrap_rcpp(y, x, extr_x);
-
-    arma::vec invg0_y = arma_pmax(arma_pmin(extr_y, arma::vec(extr_y.size()).fill(1.)), arma::vec(extr_y.size()).fill(0.));
-
-    arma::vec y1(x.size());
-
-    for(int i = 0; i < x.size(); ++i) {
-      y1(i) = (double) x(i) / (double) arma::max(arma::intersect(arma::find(p_loo <= x(i)), arma::find(q_loo == 1)).size(), 1);
-    }
-
-    arma::vec extr1_y = approxExtrap_rcpp(y1, x, extr_x);
-    arma::vec invg1_y = arma_pmax(arma_pmin(extr1_y, arma::vec(extr1_y.size()).fill(1.)), arma::vec(extr1_y.size()).fill(0.));
-
-    arma::vec p1 = arma::zeros<arma::vec>(m);
-    arma::vec p0 = arma::zeros<arma::vec>(m);
-
-    for (int i = 0; i < m; ++i) {
-        if (qs(i) == 0) {
-          p1(i) = Rcpp::as<double>(approxfun_rcpp(extr_x, invg1_y, arma::vec(1).fill(sol(i))));
-        } else {
-            p1(i) = ps(i);
-        }
-
-        if (qs(i) == 1) {
-          p0(i) = Rcpp::as<double>(approxfun_rcpp(extr_x, invg0_y, arma::vec(1).fill(sol(i))));
-        } else {
-            p0(i) = ps(i);
-        }
-    }
-
-    return p0 * (1 - q0) + p1 * q0;
+//    arma::vec q0_sol(m);
+//    arma::vec q1_sol(m);
+//
+//    for (int i = 0; i < m; ++i) {
+//        double p = ps(i);
+//        q0_sol(i) = arma::size(arma::intersect(find(p_loo <= p), find(q_loo == 0)));
+//        q0_sol(i) = arma::max(q0_sol(i), 1);
+//        q1_sol(i) = arma::size(arma::intersect(find(p_loo <= p), find(q_loo == 1)));
+//        q1_sol(i) = arma::max(q1_sol(i), 1);
+//    }
+//
+//    arma::vec sol = arma::zeros<arma::vec>(m);
+//
+//    for (int i = 0; i < m; ++i) {
+//        if (qs(i) == 0) {
+//            sol(i) = mult * ps(i) / q0_sol(i);
+//        } else {
+//            sol(i) = (1. / mult) * ps(i) / q1_sol(i);
+//        }
+//    }
+//
+//    arma::vec y(arma::size(x));
+//
+//    for(int i = 0; i < arma::size(x); ++i) {
+//      y(i) = (double) x(i) / (double) arma::max(arma::size(arma::intersect(arma::find(p_loo <= x(i)), arma::find(q_loo == 0))), 1);
+//    }
+//
+//    arma::vec extr_x = sol.elem(arma::find_unique(sol));
+//    arma::vec extr_y = approxExtrap_rcpp(y, x, extr_x);
+//
+//    arma::vec invg0_y = arma_pmax(arma_pmin(extr_y, arma::vec(arma::size(extr_y)).fill(1.)), arma::vec(arma::size(extr_y)).fill(0.));
+//
+//    arma::vec y1(arma::size(x));
+//
+//    for(int i = 0; i < arma::size(x); ++i) {
+//      y1(i) = (double) x(i) / (double) arma::max(arma::size(arma::intersect(arma::find(p_loo <= x(i)), arma::find(q_loo == 1))), 1);
+//    }
+//
+//    arma::vec extr1_y = approxExtrap_rcpp(y1, x, extr_x);
+//    arma::vec invg1_y = arma_pmax(arma_pmin(extr1_y, arma::vec(arma::size(extr1_y)).fill(1.)), arma::vec(arma::size(extr1_y)).fill(0.));
+//
+//    arma::vec p1 = arma::zeros<arma::vec>(m);
+//    arma::vec p0 = arma::zeros<arma::vec>(m);
+//
+//    for (int i = 0; i < m; ++i) {
+//        if (qs(i) == 0) {
+//          p1(i) = Rcpp::as<double>(approxfun_rcpp(extr_x, invg1_y, arma::vec(1).fill(sol(i))));
+//        } else {
+//            p1(i) = ps(i);
+//        }
+//
+//        if (qs(i) == 1) {
+//          p0(i) = Rcpp::as<double>(approxfun_rcpp(extr_x, invg0_y, arma::vec(1).fill(sol(i))));
+//        } else {
+//            p0(i) = ps(i);
+//        }
+//    }
+//
+//    return p0 * (1 - q0) + p1 * q0;
 }
 
