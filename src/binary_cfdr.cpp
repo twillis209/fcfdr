@@ -103,9 +103,8 @@ arma::vec approxfun_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
 
 }
 
-// Define the Rcpp function
 // [[Rcpp::export]]
-arma::vec per_group_binary_cfdr(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x) {
+arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x) {
     double q0 = static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 1), find(p_loo > 0.5))).size()) / static_cast<double>(arma::conv_to<arma::uvec>::from(find(p_loo > 0.5)).size());
 
     double mult = static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 0), find(p_loo > 0.5))).size()) / static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 1), find(p_loo > 0.5))).size());

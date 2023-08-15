@@ -58,3 +58,18 @@ test_that("binary_cfdr executes with low p-q correlation", {
 
   expect_equal(digest::digest(binary_cfdr(p, q, group)), "1ceb99eb0fbcf560d4a340bd7fc67455")
 })
+
+test_that("per_group_binary_cfdr_rcpp works like per_group_binary_cfdr", {
+  set.seed(2)
+  n <- 10000
+  n1p <- 500
+  zp <- c(rnorm(n1p, sd=5), rnorm(n-n1p, sd=1))
+  p <- 2*pnorm(-abs(zp))
+
+  # generate q
+  q <- rbinom(n, 1, 0.1)
+
+  group <- c(rep("A", n/2), rep("B", n/2)) 
+
+  expect_equal(binary_cfdr_rcpp(p, q, group), binary_cfdr(p, q, group))
+})

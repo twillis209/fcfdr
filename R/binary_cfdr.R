@@ -123,3 +123,57 @@ binary_cfdr <- function(p, q, group, threads = 1){
   data.frame(p, q, v)
 
 }
+
+binary_cfdr_cpp <- function(p, q, group, threads = 1){
+  unique_group <- unique(group)
+
+  # split p and q into groups
+  p_res <- split(p, f = group)
+  q_res <- split(q, f = group)
+  minp=min(p)
+  maxp=max(p)
+
+  # prepare container for v
+  v_res <- vector(mode = "list", length = length(unique_group))
+
+  ## prepare x for approxfun
+  logx=seq(log10(minp),log10(maxp),length.out=1000)
+  x=c(exp(logx),1)
+
+  v_res <- mclapply(1:length(unique_group), function(j) {
+    per_group_binary_cfdr_rcpp(p_loo = p[-which(group == unique_group[j])],
+                          q_loo = q[-which(group == unique_group[j])],
+                          ps = p_res[[j]],
+                          qs = q_res[[j]],
+                          x)
+  },
+  mc.cores = threads)
+
+  p = unsplit(p_res, f = group)
+  q = unsplit(q_res, f = group)
+  v = unsplit(v_res, f = group)
+  
+  # correct plateau for low p in applications where p,q are very weakly correlated
+  
+  if(abs(cor(p,q))<0.01){
+    
+    # identify problematic points
+    ind <- which( p < 0.01 & (v < 0.8*p | v > 1.2*p ))
+    data_bad <- data.frame(p = p[ind], v = v[ind], q = q[ind])
+    data_good <- data.frame(p = p[-ind], v = v[-ind], q = q[-ind])
+    
+    # find straight lines from data 
+    lmout_q_0 <- lm(v~p-1, data = data_good[which(data_good$q==0),])
+    lmout_q_1 <- lm(v~p-1, data = data_good[which(data_good$q==1),])
+    
+    # replace problematic points
+    v[ind] <- ifelse(data_bad$q==0, predict(lmout_q_0, data.frame(p = data_bad$p)), predict(lmout_q_1, data.frame(p = data_bad$p)))
+    
+    if(length(ind) > length(p)*0.5) warning("p,q have low correlation and >50% of v-values may be problematic - check results")
+    
+    
+  }
+  
+  data.frame(p, q, v)
+
+}
