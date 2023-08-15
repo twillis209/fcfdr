@@ -25,7 +25,7 @@ test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does", {
   x <- seq(0, 1, length.out = 11)
   y <- 2*seq(0, 1, length.out = 11)
 
-  expect_equal(approxExtrap_rcpp(x, y, c(-0.1, 0.5, 1.1))[1:2], Hmisc::approxExtrap(x, y, c(-0.1, 0.5, 1.1))$y)
+  expect_equal(approxExtrap_rcpp(x, y, c(-0.1, 0.5, 1.1))[1:3], Hmisc::approxExtrap(x, y, c(-0.1, 0.5, 1.1))$y)
 })
 
 test_that("binary_cfdr produces expected result on whole simulated data set", {
