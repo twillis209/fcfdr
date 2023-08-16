@@ -21,7 +21,7 @@ approxExtrap_rcpp <- function(x, y, xout) {
 #'
 #' @param x x coordinates of points to be interpolated
 #' @param y y coordinates of points to be interpolated
-#' @param xout x coordiantes at which to interpolate
+#' @param xout x coordinates at which to interpolate
 #'
 #' @return interpolated values 
 #' 
@@ -30,7 +30,7 @@ approxfun_rcpp <- function(x, y, xout) {
     .Call(`_fcfdr_approxfun_rcpp`, x, y, xout)
 }
 
-per_group_binary_cfdr_rcpp <- function(p_loo, q_loo, ps, qs, x) {
-    .Call(`_fcfdr_per_group_binary_cfdr_rcpp`, p_loo, q_loo, ps, qs, x)
+per_group_binary_cfdr_rcpp <- function(p_loo, q_loo, ps, qs, x, verbose = FALSE) {
+    .Call(`_fcfdr_per_group_binary_cfdr_rcpp`, p_loo, q_loo, ps, qs, x, verbose)
 }
 

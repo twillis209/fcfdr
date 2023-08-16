@@ -9,24 +9,32 @@ test_that("approxfun_rcpp has rule = 2 behaviour as per approxfun at the boundar
   x <- seq(0, 1, length.out = 11)
   y <- 2*seq(0, 1, length.out = 11)
 
+  expect_equal(approxfun_rcpp(x, y, c(0, 1))[1:2], c(0, 2))
   expect_equal(approxfun_rcpp(x, y, c(1.1, 1.2))[1:2], c(2, 2))
   expect_equal(approxfun_rcpp(x, y, c(-0.1, -0.2))[1:2], c(0, 0))
-})
-
-test_that("approxfun_rcpp throws an error with unsorted x", {
-  x <- seq(0, 1, length.out = 11)
-  x <- x * -1
-  y <- x * -2
-
-  expect_error(approxfun_rcpp(x, y, 0.55), "Input vector x is not sorted in ascending order")
 })
 
 test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does", {
   x <- seq(0, 1, length.out = 11)
   y <- 2*seq(0, 1, length.out = 11)
 
-  expect_equal(approxExtrap_rcpp(x, y, c(-0.1, 0.5, 1.1))[1:3], Hmisc::approxExtrap(x, y, c(-0.1, 0.5, 1.1))$y)
+  expect_equal(approxExtrap_rcpp(x, y, c(-0.1, 0, 0.5, 1.1))[1:4], Hmisc::approxExtrap(x, y, c(-0.1, 0, 0.5, 1.1))$y)
 })
+
+test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does on a shuffled data set", {
+  x <- seq(0, 1, length.out = 11)
+  y <- 2*seq(0, 1, length.out = 11)
+
+  set.seed(2)
+  reidx <- sample(1:11)
+
+  x <- x[reidx]
+  y <- y[reidx]
+
+  expect_equal(approxExtrap_rcpp(x, y, c(-0.1, 0, 0.5, 1.1))[1:4], Hmisc::approxExtrap(x, y, c(-0.1, 0, 0.5, 1.1))$y)
+})
+
+# TODO unsorted inputs for approxExtrap_rcpp
 
 test_that("binary_cfdr produces expected result on whole simulated data set", {
   set.seed(2)
@@ -61,6 +69,24 @@ test_that("binary_cfdr executes with low p-q correlation", {
 
 test_that("per_group_binary_cfdr_rcpp works like per_group_binary_cfdr", {
   set.seed(2)
+  n <- 100
+  n1p <- 5
+  zp <- c(rnorm(n1p, sd=5), rnorm(n-n1p, sd=1))
+  p <- 2*pnorm(-abs(zp))
+
+  # generate q
+  q <- rbinom(n, 1, 0.1)
+
+  group <- c(rep("A", n/2), rep("B", n/2))
+
+  logx=seq(log10(min(p)),log10(max(p)),length.out=1000)
+  x=c(exp(logx),1)
+
+  expect_equal(per_group_binary_cfdr_rcpp(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x)[1:5000], per_group_binary_cfdr(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x))
+})
+
+test_that("binary_cfdr_rcpp works like binary_cfdr", {
+  set.seed(2)
   n <- 10000
   n1p <- 500
   zp <- c(rnorm(n1p, sd=5), rnorm(n-n1p, sd=1))
@@ -71,5 +97,5 @@ test_that("per_group_binary_cfdr_rcpp works like per_group_binary_cfdr", {
 
   group <- c(rep("A", n/2), rep("B", n/2)) 
 
-  expect_equal(binary_cfdr_rcpp(p, q, group), binary_cfdr(p, q, group))
+  expect_equal(binary_cfdr_cpp(p, q, group), binary_cfdr(p, q, group))
 })

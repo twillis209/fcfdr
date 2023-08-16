@@ -28,23 +28,29 @@ arma::vec arma_pmin(arma::vec x, arma::vec y) {
 
 // [[Rcpp::export]]
 arma::vec approxExtrap_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
-  if(!x.is_sorted()) {
-    stop("Input vector x is not sorted in ascending order");
-  }
+  x = x(arma::sort_index(x));
+  y = y(arma::sort_index(x));
 
   arma::vec yout(xout.size());
 
-  for(int i = 0; i < xout.size(); ++i) {
-    auto upper = std::lower_bound(x.begin(), x.end(), xout(i));
+  double x_min = x(0);
+  double x_max = x(x.size()-1);
 
-    // Handle boundaries
-    if(upper == x.begin()) {
-      yout(i) = (y(1) - y(0))/(x(1) - x(0))*(xout(i)-x(0))+y(0);
-    } else if(upper == x.end()) {
+  for(int i = 0; i < xout.size(); ++i) {
+    if(xout(i) > x_max) {
       yout(i) = (y(y.size()-1) - y(y.size()-2))/(x(x.size()-1) - x(x.size()-2))*(xout(i)-x(x.size()-2))+y(y.size()-2);
+    } else if(xout(i) < x_min) {
+      yout(i) = (y(1) - y(0))/(x(1) - x(0))*(xout(i)-x(0))+y(0);
+    } else if(xout(i) == x_min) {
+      yout(i) = y(0);
+    } else if(xout(i) == x_max) {
+      yout(i) = y(y.size()-1);
     } else {
+      auto upper = std::lower_bound(x.begin(), x.end(), xout(i));
+
       arma::uword x1_idx = std::distance(x.begin(), upper);
-      double x1 = *upper;
+
+      double x1 = x(x1_idx);
       double x0 = x(x1_idx-1);
       double y1 = y(x1_idx);
       double y0 = y(x1_idx-1);
@@ -64,47 +70,43 @@ arma::vec approxExtrap_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
 //'
 //' @param x x coordinates of points to be interpolated
 //' @param y y coordinates of points to be interpolated
-//' @param xout x coordiantes at which to interpolate
+//' @param xout x coordinates at which to interpolate
 //'
 //' @return interpolated values 
 //' 
 //' @author Tom Willis
 // [[Rcpp::export]]
 arma::vec approxfun_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
-
-  if(!x.is_sorted()) {
-    stop("Input vector x is not sorted in ascending order");
-  }
+  x = x(arma::sort_index(x));
+  y = y(arma::sort_index(x));
 
   arma::vec yout(xout.size());
 
   for(int i = 0; i < xout.size(); ++i) {
+
     auto upper = std::lower_bound(x.begin(), x.end(), xout(i));
 
-    // Handle boundaries
     if(upper == x.begin()) {
       yout(i) = y(0);
-      continue;
     } else if(upper == x.end()) {
       yout(i) = y(y.size()-1);
-      continue;
+    } else {
+      arma::uword x1_idx = std::distance(x.begin(), upper);
+
+      double x1 = x(x1_idx);
+      double x0 = x(x1_idx-1);
+      double y1 = y(x1_idx);
+      double y0 = y(x1_idx-1);
+
+      yout(i) = y0+((y1-y0)/(x1-x0))*(xout(i)-x0);
     }
-
-    arma::uword x1_idx = std::distance(x.begin(), upper);
-    double x1 = *upper;
-    double x0 = x(x1_idx-1);
-    double y1 = y(x1_idx);
-    double y0 = y(x1_idx-1);
-
-    yout(i) = y0+((y1-y0)/(x1-x0))*(xout(i)-x0);
   }
 
   return yout;
-
 }
 
 // [[Rcpp::export]]
-arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x) {
+arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x, bool verbose = false) {
     double q0 = static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 1), find(p_loo > 0.5))).size()) / static_cast<double>(arma::conv_to<arma::uvec>::from(find(p_loo > 0.5)).size());
 
     double mult = static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 0), find(p_loo > 0.5))).size()) / static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 1), find(p_loo > 0.5))).size());
@@ -151,7 +153,7 @@ arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec
     arma::vec p1 = arma::zeros<arma::vec>(x.size());
     arma::vec p0 = arma::zeros<arma::vec>(x.size());
 
-    for (int i = 0; i < x.size(); ++i) {
+    for (int i = 0; i < qs.size(); ++i) {
         if (qs(i) == 0) {
           p1(i) = (double) approxfun_rcpp(extr_x, invg1_y, arma::vec(1).fill(sol(i)))(0);
         } else {
@@ -165,6 +167,74 @@ arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec
         }
     }
 
-    return p0 * (1 - q0) + p1 * q0;
+    arma::vec v = p0 * (1 - q0) + p1 * q0;
+
+    if(verbose) {
+      Rcout << "q0: " << q0 << "\n";
+      Rcout << "mult: " << mult << "\n";
+      Rcout << "q0_sol:" << "\n";
+      for(int i = 0; i < q0_sol.size(); ++i) {
+        Rcout << q0_sol(i) << "\n";
+      }
+      
+      Rcout << "q1_sol:" << "\n";
+      for(int i = 0; i < q1_sol.size(); ++i) {
+        Rcout << q1_sol(i) << "\n";
+      }
+       
+      Rcout << "sol:" << "\n";
+      for(int i = 0; i < sol.size(); ++i) {
+        Rcout << sol(i) << "\n";
+      }
+      
+      Rcout << "y:" << "\n";
+      for(int i = 0; i < y.size(); ++i) {
+        Rcout << y(i) << "\n";
+      }
+      
+      Rcout << "extr_x:" << "\n";
+      for(int i = 0; i < extr_x.size(); ++i) {
+        Rcout << extr_x(i) << "\n";
+      }
+
+      Rcout << "invg0_y:" << "\n";
+      for(int i = 0; i < invg0_y.size(); ++i) {
+        Rcout << invg0_y(i) << "\n";
+      }
+      
+      Rcout << "y1:" << "\n";
+      for(int i = 0; i < y1.size(); ++i) {
+        Rcout << y1(i) << "\n";
+      }
+
+      // This differs with the R code
+      Rcout << "extr1_y:" << "\n";
+      for(int i = 0; i < extr1_y.size(); ++i) {
+        Rcout << extr1_y(i) << "\n";
+      }
+      
+      Rcout << "invg1_y:" << "\n";
+      for(int i = 0; i < invg1_y.size(); ++i) {
+        Rcout << invg1_y(i) << "\n";
+      }
+      
+      Rcout << "p1:" << "\n";
+      for(int i = 0; i < p1.size(); ++i) {
+        Rcout << p1(i) << "\n";
+      }
+      
+      Rcout << "p0:" << "\n";
+      for(int i = 0; i < p0.size(); ++i) {
+        Rcout << p0(i) << "\n";
+      }
+      
+      Rcout << "v:" << "\n";
+      for(int i = 0; i < v.size(); ++i) {
+        Rcout << v(i) << "\n";
+      }
+
+    }
+    
+    return Rcpp::NumericVector(v.begin(), v.end());
 }
 

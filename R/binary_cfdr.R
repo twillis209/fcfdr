@@ -8,7 +8,7 @@
 #'
 #' 
 #' @importFrom Hmisc approxExtrap
-per_group_binary_cfdr <- function(p_loo, q_loo, ps, qs, x) {
+per_group_binary_cfdr <- function(p_loo, q_loo, ps, qs, x, log_output = NULL) {
     q0 <- sum(q_loo == 1 & p_loo > 0.5)/sum(p_loo > 0.5)
     mult <- (sum(q_loo == 0 & p_loo > 1/2)/sum(q_loo == 1 & p_loo > 1/2))
     q0_sol=sapply(ps, function(p) max(sum(p_loo <= p & q_loo==0),1))
@@ -31,6 +31,11 @@ per_group_binary_cfdr <- function(p_loo, q_loo, ps, qs, x) {
 
     p1=ifelse(qs==0,invg1(sol),ps)
     p0=ifelse(qs==1,invg0(sol),ps)
+
+    if(!is.null(log_output)) {
+      v <- p0*(1-q0) + p1*q0
+      save(q0, mult, q0_sol, q1_sol, sol, y, x, extr, invg0, y1, extr1, invg1, p1, p0, v, file = log_output)
+    }
 
     p0*(1-q0) + p1*q0
 }
