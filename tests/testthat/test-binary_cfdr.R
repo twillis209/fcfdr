@@ -1,8 +1,25 @@
-test_that("approxfun_rcpp works in the same manner as approxfun", {
+test_that("approxfun_rcpp works in the same manner as approxfun with sorted input", {
   x <- seq(0, 1, length.out = 11)
   y <- 2*seq(0, 1, length.out = 11)
 
-  expect_equal(approxfun_rcpp(x, y, 0.55)[1], 1.1)
+  xout <- c(0.2, 0.55, 0.7, 0.8)
+
+  expect_equal(approxfun_rcpp(x, y, xout)[1:4], approxfun(x, y)(xout))
+})
+
+test_that("approxfun_rcpp works in the same manner as approxfun with unsorted input", {
+  x <- seq(0, 1, length.out = 11)
+  y <- 2*seq(0, 1, length.out = 11)
+
+  xout <- c(0.2, 0.55, 0.7, 0.8)
+
+  set.seed(2)
+
+  reidx <- sample(1:11)
+  x <- x[reidx]
+  y <- y[reidx]
+
+  expect_equal(approxfun_rcpp(x, y, xout)[1:4], approxfun(x, y)(xout))
 })
 
 test_that("approxfun_rcpp has rule = 2 behaviour as per approxfun at the boundaries", {
@@ -14,14 +31,16 @@ test_that("approxfun_rcpp has rule = 2 behaviour as per approxfun at the boundar
   expect_equal(approxfun_rcpp(x, y, c(-0.1, -0.2))[1:2], c(0, 0))
 })
 
-test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does", {
+test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does when interpolating", {
   x <- seq(0, 1, length.out = 11)
   y <- 2*seq(0, 1, length.out = 11)
 
-  expect_equal(approxExtrap_rcpp(x, y, c(-0.1, 0, 0.5, 1.1))[1:4], Hmisc::approxExtrap(x, y, c(-0.1, 0, 0.5, 1.1))$y)
+  xout <- c(0, 1, 0.55, 1)
+
+  expect_equal(approxExtrap_rcpp(x, y, xout)[1:4], Hmisc::approxExtrap(x, y, xout)$y)
 })
 
-test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does on a shuffled data set", {
+test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does when interpolating with shuffled data", {
   x <- seq(0, 1, length.out = 11)
   y <- 2*seq(0, 1, length.out = 11)
 
@@ -31,7 +50,30 @@ test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does on a shuffled dat
   x <- x[reidx]
   y <- y[reidx]
 
+  xout <- c(0, 1, 0.55, 1)
+
+  expect_equal(approxExtrap_rcpp(x, y, xout)[1:4], Hmisc::approxExtrap(x, y, xout)$y)
+})
+
+test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does", {
+  x <- seq(0, 1, length.out = 11)
+  y <- 2*seq(0, 1, length.out = 11)
+
   expect_equal(approxExtrap_rcpp(x, y, c(-0.1, 0, 0.5, 1.1))[1:4], Hmisc::approxExtrap(x, y, c(-0.1, 0, 0.5, 1.1))$y)
+})
+
+test_that("approxExtrap_rcpp works as Hmisc::approxExtrap does on unordered data set", {
+  x <- seq(0, 1, length.out = 11)
+  y <- 2*seq(0, 1, length.out = 11)
+
+  set.seed(2)
+  reidx <- sample(1:11)
+
+  x <- x[reidx]
+  y <- y[reidx]
+  xout <- c(-0.1, 0, 0.5, 1.1)
+
+  expect_equal(approxExtrap_rcpp(x, y, xout)[1:4], Hmisc::approxExtrap(x, y, xout)$y)
 })
 
 # TODO unsorted inputs for approxExtrap_rcpp
@@ -82,7 +124,7 @@ test_that("per_group_binary_cfdr_rcpp works like per_group_binary_cfdr", {
   logx=seq(log10(min(p)),log10(max(p)),length.out=1000)
   x=c(exp(logx),1)
 
-  expect_equal(per_group_binary_cfdr_rcpp(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x)[1:5000], per_group_binary_cfdr(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x))
+  expect_equal(per_group_binary_cfdr_rcpp(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x), per_group_binary_cfdr(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x), tolerance = 1e-5)
 })
 
 test_that("binary_cfdr_rcpp works like binary_cfdr", {

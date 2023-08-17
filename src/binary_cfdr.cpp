@@ -1,3 +1,6 @@
+// force return as a vector rather than single column matrix
+#define RCPP_ARMADILLO_RETURN_ANYVEC_AS_VECTOR
+
 #include <RcppArmadillo.h>
 
 using namespace Rcpp;
@@ -28,32 +31,32 @@ arma::vec arma_pmin(arma::vec x, arma::vec y) {
 
 // [[Rcpp::export]]
 arma::vec approxExtrap_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
-  x = x(arma::sort_index(x));
-  y = y(arma::sort_index(x));
+  arma::vec xc = x(arma::sort_index(x));
+  arma::vec yc = y(arma::sort_index(x));
 
   arma::vec yout(xout.size());
 
-  double x_min = x(0);
-  double x_max = x(x.size()-1);
+  double x_min = xc(0);
+  double x_max = xc(xc.size()-1);
 
   for(int i = 0; i < xout.size(); ++i) {
     if(xout(i) > x_max) {
-      yout(i) = (y(y.size()-1) - y(y.size()-2))/(x(x.size()-1) - x(x.size()-2))*(xout(i)-x(x.size()-2))+y(y.size()-2);
+      yout(i) = (yc(yc.size()-1) - yc(yc.size()-2))/(xc(xc.size()-1) - xc(xc.size()-2))*(xout(i)-xc(xc.size()-2))+yc(yc.size()-2);
     } else if(xout(i) < x_min) {
-      yout(i) = (y(1) - y(0))/(x(1) - x(0))*(xout(i)-x(0))+y(0);
+      yout(i) = (yc(1) - yc(0))/(xc(1) - xc(0))*(xout(i)-xc(0))+yc(0);
     } else if(xout(i) == x_min) {
-      yout(i) = y(0);
+      yout(i) = yc(0);
     } else if(xout(i) == x_max) {
-      yout(i) = y(y.size()-1);
+      yout(i) = yc(yc.size()-1);
     } else {
-      auto upper = std::lower_bound(x.begin(), x.end(), xout(i));
+      auto upper = std::lower_bound(xc.begin(), xc.end(), xout(i));
 
-      arma::uword x1_idx = std::distance(x.begin(), upper);
+      arma::uword x1_idx = std::distance(xc.begin(), upper);
 
-      double x1 = x(x1_idx);
-      double x0 = x(x1_idx-1);
-      double y1 = y(x1_idx);
-      double y0 = y(x1_idx-1);
+      double x1 = xc(x1_idx);
+      double x0 = xc(x1_idx-1);
+      double y1 = yc(x1_idx);
+      double y0 = yc(x1_idx-1);
 
       yout(i) = y0+((y1-y0)/(x1-x0))*(xout(i)-x0);
     }
@@ -77,26 +80,26 @@ arma::vec approxExtrap_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
 //' @author Tom Willis
 // [[Rcpp::export]]
 arma::vec approxfun_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
-  x = x(arma::sort_index(x));
-  y = y(arma::sort_index(x));
+  arma::vec xc = x(arma::sort_index(x));
+  arma::vec yc = y(arma::sort_index(x));
 
   arma::vec yout(xout.size());
 
   for(int i = 0; i < xout.size(); ++i) {
 
-    auto upper = std::lower_bound(x.begin(), x.end(), xout(i));
+    auto upper = std::lower_bound(xc.begin(), xc.end(), xout(i));
 
-    if(upper == x.begin()) {
-      yout(i) = y(0);
-    } else if(upper == x.end()) {
-      yout(i) = y(y.size()-1);
+    if(upper == xc.begin()) {
+      yout(i) = yc(0);
+    } else if(upper == xc.end()) {
+      yout(i) = yc(yc.size()-1);
     } else {
-      arma::uword x1_idx = std::distance(x.begin(), upper);
+      arma::uword x1_idx = std::distance(xc.begin(), upper);
 
-      double x1 = x(x1_idx);
-      double x0 = x(x1_idx-1);
-      double y1 = y(x1_idx);
-      double y0 = y(x1_idx-1);
+      double x1 = xc(x1_idx);
+      double x0 = xc(x1_idx-1);
+      double y1 = yc(x1_idx);
+      double y0 = yc(x1_idx-1);
 
       yout(i) = y0+((y1-y0)/(x1-x0))*(xout(i)-x0);
     }
@@ -150,8 +153,8 @@ arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec
     arma::vec extr1_y = approxExtrap_rcpp(y1, x, extr_x);
     arma::vec invg1_y = arma_pmax(arma_pmin(extr1_y, arma::vec(arma::size(extr1_y)).fill(1.)), arma::vec(arma::size(extr1_y)).fill(0.));
 
-    arma::vec p1 = arma::zeros<arma::vec>(x.size());
-    arma::vec p0 = arma::zeros<arma::vec>(x.size());
+    arma::vec p1 = arma::vec(qs.size()).fill(R_NaN);
+    arma::vec p0 = arma::vec(qs.size()).fill(R_NaN);
 
     for (int i = 0; i < qs.size(); ++i) {
         if (qs(i) == 0) {
@@ -235,6 +238,6 @@ arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec
 
     }
     
-    return Rcpp::NumericVector(v.begin(), v.end());
+    return v;
 }
 
