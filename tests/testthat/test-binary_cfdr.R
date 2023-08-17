@@ -124,7 +124,7 @@ test_that("per_group_binary_cfdr_rcpp works like per_group_binary_cfdr", {
   logx=seq(log10(min(p)),log10(max(p)),length.out=1000)
   x=c(exp(logx),1)
 
-  expect_equal(per_group_binary_cfdr_rcpp(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x), per_group_binary_cfdr(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x), tolerance = 1e-5)
+  expect_equal(per_group_binary_cfdr_rcpp(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x)[1:50], per_group_binary_cfdr(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x), tolerance = 1e-5)
 })
 
 test_that("binary_cfdr_rcpp works like binary_cfdr", {

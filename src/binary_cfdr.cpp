@@ -109,7 +109,7 @@ arma::vec approxfun_rcpp(arma::vec x, arma::vec y, arma::vec xout) {
 }
 
 // [[Rcpp::export]]
-arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x, bool verbose = false) {
+arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x) {
     double q0 = static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 1), find(p_loo > 0.5))).size()) / static_cast<double>(arma::conv_to<arma::uvec>::from(find(p_loo > 0.5)).size());
 
     double mult = static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 0), find(p_loo > 0.5))).size()) / static_cast<double>(arma::conv_to<arma::uvec>::from(arma::intersect(find(q_loo == 1), find(p_loo > 0.5))).size());
@@ -172,72 +172,6 @@ arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec
 
     arma::vec v = p0 * (1 - q0) + p1 * q0;
 
-    if(verbose) {
-      Rcout << "q0: " << q0 << "\n";
-      Rcout << "mult: " << mult << "\n";
-      Rcout << "q0_sol:" << "\n";
-      for(int i = 0; i < q0_sol.size(); ++i) {
-        Rcout << q0_sol(i) << "\n";
-      }
-      
-      Rcout << "q1_sol:" << "\n";
-      for(int i = 0; i < q1_sol.size(); ++i) {
-        Rcout << q1_sol(i) << "\n";
-      }
-       
-      Rcout << "sol:" << "\n";
-      for(int i = 0; i < sol.size(); ++i) {
-        Rcout << sol(i) << "\n";
-      }
-      
-      Rcout << "y:" << "\n";
-      for(int i = 0; i < y.size(); ++i) {
-        Rcout << y(i) << "\n";
-      }
-      
-      Rcout << "extr_x:" << "\n";
-      for(int i = 0; i < extr_x.size(); ++i) {
-        Rcout << extr_x(i) << "\n";
-      }
-
-      Rcout << "invg0_y:" << "\n";
-      for(int i = 0; i < invg0_y.size(); ++i) {
-        Rcout << invg0_y(i) << "\n";
-      }
-      
-      Rcout << "y1:" << "\n";
-      for(int i = 0; i < y1.size(); ++i) {
-        Rcout << y1(i) << "\n";
-      }
-
-      // This differs with the R code
-      Rcout << "extr1_y:" << "\n";
-      for(int i = 0; i < extr1_y.size(); ++i) {
-        Rcout << extr1_y(i) << "\n";
-      }
-      
-      Rcout << "invg1_y:" << "\n";
-      for(int i = 0; i < invg1_y.size(); ++i) {
-        Rcout << invg1_y(i) << "\n";
-      }
-      
-      Rcout << "p1:" << "\n";
-      for(int i = 0; i < p1.size(); ++i) {
-        Rcout << p1(i) << "\n";
-      }
-      
-      Rcout << "p0:" << "\n";
-      for(int i = 0; i < p0.size(); ++i) {
-        Rcout << p0(i) << "\n";
-      }
-      
-      Rcout << "v:" << "\n";
-      for(int i = 0; i < v.size(); ++i) {
-        Rcout << v(i) << "\n";
-      }
-
-    }
-    
     return v;
 }
 

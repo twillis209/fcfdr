@@ -62,8 +62,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // per_group_binary_cfdr_rcpp
-arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x, bool verbose);
-RcppExport SEXP _fcfdr_per_group_binary_cfdr_rcpp(SEXP p_looSEXP, SEXP q_looSEXP, SEXP psSEXP, SEXP qsSEXP, SEXP xSEXP, SEXP verboseSEXP) {
+arma::vec per_group_binary_cfdr_rcpp(arma::vec p_loo, arma::vec q_loo, arma::vec ps, arma::vec qs, arma::vec x);
+RcppExport SEXP _fcfdr_per_group_binary_cfdr_rcpp(SEXP p_looSEXP, SEXP q_looSEXP, SEXP psSEXP, SEXP qsSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -72,8 +72,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type ps(psSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type qs(qsSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(per_group_binary_cfdr_rcpp(p_loo, q_loo, ps, qs, x, verbose));
+    rcpp_result_gen = Rcpp::wrap(per_group_binary_cfdr_rcpp(p_loo, q_loo, ps, qs, x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -83,7 +82,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_fcfdr_arma_pmin", (DL_FUNC) &_fcfdr_arma_pmin, 2},
     {"_fcfdr_approxExtrap_rcpp", (DL_FUNC) &_fcfdr_approxExtrap_rcpp, 3},
     {"_fcfdr_approxfun_rcpp", (DL_FUNC) &_fcfdr_approxfun_rcpp, 3},
-    {"_fcfdr_per_group_binary_cfdr_rcpp", (DL_FUNC) &_fcfdr_per_group_binary_cfdr_rcpp, 6},
+    {"_fcfdr_per_group_binary_cfdr_rcpp", (DL_FUNC) &_fcfdr_per_group_binary_cfdr_rcpp, 5},
     {NULL, NULL, 0}
 };
 

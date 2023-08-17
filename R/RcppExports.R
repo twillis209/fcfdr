@@ -30,7 +30,7 @@ approxfun_rcpp <- function(x, y, xout) {
     .Call(`_fcfdr_approxfun_rcpp`, x, y, xout)
 }
 
-per_group_binary_cfdr_rcpp <- function(p_loo, q_loo, ps, qs, x, verbose = FALSE) {
-    .Call(`_fcfdr_per_group_binary_cfdr_rcpp`, p_loo, q_loo, ps, qs, x, verbose)
+per_group_binary_cfdr_rcpp <- function(p_loo, q_loo, ps, qs, x) {
+    .Call(`_fcfdr_per_group_binary_cfdr_rcpp`, p_loo, q_loo, ps, qs, x)
 }
 
