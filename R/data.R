@@ -14,8 +14,10 @@
 #' 
 "T1D_application_data"
 
-
-
+#' Data for binary_cfdr unit test
+#'
+#' @format data.frame with 10,000 rows and three columns
+"binary_cfdr_test_data_set.rds"
 
 # Suppress R CMD check notes
 #' @importFrom graphics hist
