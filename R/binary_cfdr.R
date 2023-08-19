@@ -35,6 +35,40 @@ per_group_binary_cfdr <- function(p_loo, q_loo, ps, qs, x) {
     p0*(1-q0) + p1*q0
 }
 
+per_group_binary_cfdr_with_ecdf <- function(p_loo, q_loo, ps, qs, x) {
+  q0 <- sum(q_loo == 1 & p_loo > 0.5)/sum(p_loo > 0.5)
+  mult <- (sum(q_loo == 0 & p_loo > 1/2)/sum(q_loo == 1 & p_loo > 1/2))
+
+  p_loo_q_loo_zero_ecdf <- ecdf(p_loo[q_loo == 0])
+  p_loo_q_loo_one_ecdf <- ecdf(p_loo[q_loo == 1])
+  n_p_loo_q_loo_zero <- length(p_loo[q_loo == 0])
+  n_p_loo_q_loo_one <- length(p_loo[q_loo == 1])
+
+  q0_sol <- pmax(n_p_loo_q_loo_zero*p_loo_q_loo_zero_ecdf(ps), 1)
+  q1_sol <- pmax(n_p_loo_q_loo_one*p_loo_q_loo_one_ecdf(ps), 1)
+
+  sol <- ifelse(qs==0,
+                mult*ps / q0_sol,
+                (1/mult)*ps / q1_sol)
+
+  ## approx g0
+  y=x/pmax(n_p_loo_q_loo_zero*p_loo_q_loo_zero_ecdf(x), 1)
+  extr=Hmisc::approxExtrap(y,x,xout=unique(sol))
+  invg0=approxfun(x=extr$x,y=pmax(pmin(extr$y,1),0),rule=2)
+  ## invg0_spline=splinefun(x=y,y=x,method="hyman")
+
+  ## approx g1
+  y1=x/pmax(n_p_loo_q_loo_one*p_loo_q_loo_one_ecdf(x), 1)
+  extr1=Hmisc::approxExtrap(y1,x,xout=unique(sol))
+  invg1=approxfun(x=extr1$x,y=pmax(pmin(extr1$y,1),0),rule=2)
+
+  p1=ifelse(qs==0,invg1(sol),ps)
+  p0=ifelse(qs==1,invg0(sol),ps)
+
+  p0*(1-q0) + p1*q0
+}
+
+
 #' Perform cFDR leveraging binary auxiliary covariates
 #'
 #' @param p p-values for principal trait (vector of length n)
@@ -87,7 +121,7 @@ binary_cfdr <- function(p, q, group, threads = 1){
   x=c(exp(logx),1)
 
   v_res <- mclapply(1:length(unique_group), function(j) {
-    per_group_binary_cfdr(p_loo = p[-which(group == unique_group[j])],
+    per_group_binary_cfdr_with_ecdf(p_loo = p[-which(group == unique_group[j])],
                           q_loo = q[-which(group == unique_group[j])],
                           ps = p_res[[j]],
                           qs = q_res[[j]],

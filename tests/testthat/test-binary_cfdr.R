@@ -123,8 +123,36 @@ test_that("per_group_binary_cfdr_rcpp works like per_group_binary_cfdr", {
 
   logx=seq(log10(min(p)),log10(max(p)),length.out=1000)
   x=c(exp(logx),1)
+  
+  p_loo <- p[1:(n/2)]
+  q_loo <- q[1:(n/2)]
+  ps <- p[((n/2)+1):n]
+  qs <- q[((n/2)+1):n]
 
-  expect_equal(per_group_binary_cfdr_rcpp(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x)[1:50], per_group_binary_cfdr(p[1:(n/2)], q[1:(n/2)], p[((n/2)+1):n], q[((n/2)+1):n], x), tolerance = 1e-5)
+  expect_equal(per_group_binary_cfdr_rcpp(p_loo, q_loo, ps, qs, x)[1:50], per_group_binary_cfdr(p_loo, q_loo, ps, qs, x), tolerance = 1e-5)
+})
+
+test_that("per_group_binary_cfdr_with_ecdf works like per_group_binary_cfdr", {
+  set.seed(2)
+  n <- 100
+  n1p <- 5
+  zp <- c(rnorm(n1p, sd=5), rnorm(n-n1p, sd=1))
+  p <- 2*pnorm(-abs(zp))
+
+  # generate q
+  q <- rbinom(n, 1, 0.1)
+
+  group <- c(rep("A", n/2), rep("B", n/2))
+
+  logx=seq(log10(min(p)),log10(max(p)),length.out=1000)
+  x=c(exp(logx),1)
+
+  p_loo <- p[1:(n/2)]
+  q_loo <- q[1:(n/2)]
+  ps <- p[((n/2)+1):n]
+  qs <- q[((n/2)+1):n]
+
+  expect_equal(per_group_binary_cfdr_with_ecdf(p_loo, q_loo, ps, qs, x)[1:50], per_group_binary_cfdr(p_loo, q_loo, ps, qs, x), tolerance = 1e-5)
 })
 
 test_that("binary_cfdr_rcpp works like binary_cfdr", {
